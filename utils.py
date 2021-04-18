@@ -1,0 +1,7 @@
+import yaml
+
+def get_configs(filename):
+    return yaml.load(open(filename), yaml.SafeLoader)
+
+def gen_cmd_prefix(prefix, device, number):
+    return prefix + str(device) + '_' + str(number)

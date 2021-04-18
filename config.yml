@@ -1,0 +1,65 @@
+# worker IPs. Can use `[a-b]` to represent multiple IPs. Use hostname is OK, 
+# but it is not recommended to use IP and hostname simultaneously, as one same 
+# worker may be treated as two different workers.
+ip_include:
+  - 10.176.[64-64].[26-27]
+  - node2[8-9]
+
+# excluded IPs. Only IPs shown in include and not shown in exclude will be
+# treated as a worker. 
+ip_exclude:
+  - 10.176.64.27
+  - node29
+
+# The number of tasks running on CPU. Now it doesn't support setting different
+# threads on different workers. 
+cpu_thread: 2
+
+# The number of tasks running on GPU.
+gpu_thread: 1
+
+# The prefix to be added when running the task. It's added before the real task
+# command like `TASKDELIVER0_1=; real_cmd`. The rule to add device and thread
+# number can be found in `utils.get_cmd_prefix`.
+command_prefix: TASKDELIVER
+
+# Set false to add `StrictHostKeyChecking=no` to avoid ssh warning when
+# connecting to new machines.
+ssh_strict_host_key_checking: false
+
+# when not empty, use specified username in ssh.
+ssh_username: ''
+
+# the port for ssh. In normal situations, just remain it as 22.
+ssh_port: 30022
+
+# When tasks are using GPU, and running in a public machine, set an approximate
+# GPU memory usage to avoid MLE. You can also use it to avoid using GPUs which
+# is used by others. 
+expected_gpu_memory_usage: 0
+
+# When checking status of workers, now many threads will work simultaneously. 
+# An approximate usage of memory per thread is 3MB in Ubuntu 20.04+Python3.7, 
+# set it with a smaller number when master has small memory. 
+parallel_num: 128
+
+# folder to save log files, which contains output of every task.
+log_folder: logs
+
+# The class name of the task generator to use.
+task_generator: SleepGenerator
+
+# when set true, output debugging messages.
+verbose: false
+
+# when set true, only show ssh commands, and not really sending them.
+testmode: false
+
+# sleep seconds after getting worker status. to avoid mistakenly send two tasks
+# into one worker thread, it is recommended to set a positive interger. 
+sleep_after_status: 3
+
+# arguments used in SleepGenerator. When using other task generator, add
+# corresponding arguments below. 
+sleep_time: 30s
+sleep_task_count: 15

@@ -1,15 +1,87 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os 
 import sys
-import maintain_status
 import time
 import re
-from IP import available_ip_pool, ip_prefix, self_ip, parallel_num
+import yaml
 
-TASK_IS = 'train'
-code_folder = '/app/MultiTSC/'
-# code_folder = '/app/MM/MultiTSC/'
+from get_worker_status import get_worker_status, output_status
+from task_generator import *
+from utils import get_configs, gen_cmd_prefix
+
+configs = 'config.yml'
+if len(sys.argv) > 1:
+    configs = sys.argv[1]
+configs = get_configs(configs)
+
+def main():
+    taskgen = globals()[configs['task_generator']](**configs)
+    print('Task number:', len(taskgen))
+    logf = configs['log_folder']
+    if not os.path.exists(logf):
+        print('log folder not exist, create it.')
+        os.system(f'mkdir "{logf}" -p')
+    if len(os.listdir(logf)) > 0:
+        print('log folder not empty! press enter to continue '
+              'or ctrl-c to exit.')
+        try:
+            input()
+        except KeyboardInterrupt:
+            exit()
+    status_list = []
+    total_number = len(taskgen)
+    for i in range(total_number):
+        while len(status_list) == 0:
+            status_list = get_status()
+            if len(status_list) > 0:
+                IP_maxlen = max([len(x[0]) for x in status_list])
+        prefix = gen_cmd_prefix(configs['command_prefix'], *status_list[0][1:])
+        cmd, logf = taskgen.get_next_command(prefix, *status_list[0])
+        logf = os.path.join(configs['log_folder'], logf)
+        send_task(prefix, *status_list[0], cmd, logf)
+        print(task_send_notify(i, total_number, *status_list[0], IP_maxlen))
+        status_list = status_list[1:]
+
+def task_send_notify(now, total_number, IP, device, thread, IP_maxlen = 0):
+    res = (f'Task {"%3d" % now}/{total_number} sent to '
+           f'{"%%-%ds" % IP_maxlen % IP} '
+           f'{"CPU  " if device == "X" else "GPU " + str(device)} '
+           f'thread {thread}'
+          )
+    return res
+
+"""get thread status by get_worker_status, keep available worker threads.
+    Return: [[IP, device, thread_number], ... ]
+"""
+def get_status():
+    print('try to get worker status ...')
+    R = get_worker_status(**configs)
+    if configs['verbose']:
+        output_status(R)
+    res = []
+    for ip in R:
+        for device in R[ip]:
+            for thread, status in enumerate(R[ip][device]):
+                if status == 'A':
+                    res.append([ip, device, thread])
+    print(f'available worker thread(s): {len(res)}')
+    time.sleep(configs['sleep_after_status'])
+    return res
+
+def send_task(prefix, IP, device, thread_number, cmd, logfile):
+    username = configs['ssh_username']
+    port = configs['ssh_port']
+    final_cmd = (f'ssh {username}{"@" if username else ""}{IP} -p {port} '
+                 f'"{prefix}=; {cmd}" '
+                 f' > {logfile} 2>&1 &'
+                )
+    if configs['verbose'] or configs['testmode']:
+        print(final_cmd)
+    if not configs['testmode']:
+        os.system(final_cmd)
+
+"""
 
 # train args
 cityflow_config_list = 'cityflow_config_list.txt'
@@ -26,24 +98,6 @@ test_target_folder = ''
 # common setting
 run_and_shutdown = False # deprecated, now spare machines will be shutdown
 shutdown_suffix = ' && shutdown now' if run_and_shutdown else ''
-
-def main():
-    if TASK_IS.lower() == 'test':
-        test_main(sys.argv)
-    elif TASK_IS.lower() == 'train':
-        train_main(sys.argv)
-
-def get_status():
-    R = maintain_status.main(ip_prefix, available_ip_pool, self_ip, 
-                             parallel_num)
-    st, ed = available_ip_pool
-    res = []
-    for ip in ip_prefix:
-        r = R[:ed - st + 1]
-        R = R[ed - st + 1:]
-        for i, c in zip(range(st, ed + 1), r):
-            res.append([ip + str(i), c])
-    return res
 
 def count_status(status):
     r = {'A': 0, 'B': 0, 'S': 0, 'D': 0}
@@ -65,12 +119,6 @@ def get_next_available():
     choose = last_available[0]
     last_available = last_available[1:]
     return choose
-
-def send_task(target_ip, cmd, logfile):
-    final_cmd = 'ssh %s "RUN_TASK=1; %s" > %s 2>&1 &' % (target_ip, cmd, logfile)
-    print(final_cmd)
-    #final_cmd = 'ssh %s "sleep 15s && echo python main.py" > %s 2>&1 &' % (target_ip, logfile)
-    os.system(final_cmd)
 
 def make_command_train(config, cityflow_config, tx):
     return ('cd ' + code_folder + '; '
@@ -170,6 +218,7 @@ def test_main(argv):
                                             log, IP.split('.')[-1])
             send_task(IP, cmd, logfile)
         now_number += 1
+"""
 
 if __name__ == '__main__':
     #print(get_status())

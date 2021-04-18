@@ -1,36 +1,29 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os 
 import sys
-import maintain_status
 import time
-from IP import available_ip_pool, ip_prefix, self_ip, parallel_num
 
-check_times = 5
-sleep_time = 20
+from get_worker_status import get_worker_status
+from utils import get_configs
 
-def get_status():
-    R = maintain_status.main(ip_prefix, available_ip_pool, self_ip, 
-                             parallel_num)
-    st, ed = available_ip_pool
-    res = []
-    for ip in ip_prefix:
-        r = R[:ed - st + 1]
-        R = R[ed - st + 1:]
-        for i, c in zip(range(st, ed + 1), r):
-            res.append([ip + str(i), c])
-    return res
+check_times = 1
+sleep_time = 1
 
 def get_available():
     res = []
-    status = get_status()
-    for ip, s in status:
-        if s == 'A':
+    status = get_worker_status(**get_configs('config.yml'))
+    for ip in status:
+        flag = True
+        for dev in status[ip]:
+            for i in status[ip][dev]:
+                flag = flag and i == 'A'
+        if flag:
             res.append(ip)
     return res
 
 def send_shutdown(ip):
-    cmd = 'ssh %s "shutdown now"' % ip
+    cmd = 'echo ssh %s "shutdown now"' % ip
     os.system(cmd)
 
 def shutdown_available():
@@ -51,7 +44,5 @@ def shutdown_available():
         send_shutdown(ip)
 
 if __name__ == '__main__':
-    #print(get_status())
-    #send_task('192.168.1.251', 'cd /app/MultiTSC; ls', 'running_log/1.log')
     while True:
         shutdown_available()
