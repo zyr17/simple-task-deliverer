@@ -38,6 +38,14 @@ ssh_port: 30022
 # is used by others. 
 expected_gpu_memory_usage: 0
 
+# when checking GPU availability, users listed below will be trated as not
+# exist. If other user running processes on GPU, that GPU will be treated as
+# not available.
+gpu_check_ignore_users:
+  - root
+  - gdm
+  - mdm
+
 # When checking status of workers, now many threads will work simultaneously. 
 # An approximate usage of memory per thread is 3MB in Ubuntu 20.04+Python3.7, 
 # set it with a smaller number when master has small memory. 

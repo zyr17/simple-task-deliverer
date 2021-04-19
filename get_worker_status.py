@@ -29,6 +29,7 @@
                determined. 
 """
 import os
+import getpass
 import sys
 import re
 import multiprocessing
@@ -60,8 +61,9 @@ def gen_ip_lists(inc, exc):
     excIP = []
     for i in inc:
         incIP += get_ip(i)
-    for i in exc:
-        excIP += get_ip(i)
+    if exc:
+        for i in exc:
+            excIP += get_ip(i)
     IPs = []
     for i in incIP:
         if i not in excIP:
@@ -71,7 +73,7 @@ def gen_ip_lists(inc, exc):
 class Worker(multiprocessing.Process):
     def __init__(self, ip, pipe, cpu_thread, gpu_thread, command_prefix, 
                  ssh_strict_host_key_checking, ssh_username, ssh_port, 
-                 expected_gpu_memory_usage, **kwargs):
+                 expected_gpu_memory_usage, gpu_check_ignore_users, **kwargs):
         super().__init__(daemon = True)
         self.ip = ip
         self.cpu = cpu_thread
@@ -81,6 +83,8 @@ class Worker(multiprocessing.Process):
         self.username = ssh_username
         self.port = ssh_port
         self.gpumem = expected_gpu_memory_usage
+        self.ignoreuser = gpu_check_ignore_users
+        self.kwargs = kwargs
         if self.gpumem <= 0:
             self.gpumem = 1
         self.pipe = pipe
@@ -109,7 +113,7 @@ class Worker(multiprocessing.Process):
         )
         return res
 
-    def get_gpu_status(self):
+    def get_gpu_status(self, ps_lines):
         lines = subprocess.Popen(self.ssh_cmd('nvidia-smi'),
                                  shell = True, 
                                  stdout = subprocess.PIPE,
@@ -140,12 +144,43 @@ class Worker(multiprocessing.Process):
             lines = lines[1:]
             while '-----' not in lines[0]:
                 lines = lines[1:]
+        GPUpos = -1
+        PIDpos = -1
+        while '======' not in lines[0]:
+            if '|' in lines[0]:
+                line = lines[0].split('|')[1]
+                if 'GPU  ' in line:
+                    GPUpos = line.index('GPU  ')
+                if 'PID' in line:
+                    PIDpos = line.index('PID') - 4
+            lines = lines[1:]
+        assert PIDpos >= 0 and GPUpos >= 0
+        ps_lines = [x.strip().split()[:2] for x in ps_lines[1:]]
+        ps_lines = {int(x[1]): x[0] for x in ps_lines if len(x) == 2}
+        working_name = self.username
+        if self.username == '':
+            # get current username
+            working_name = getpass.getuser()
+        for line in lines[1:]:
+            if len(line) == 0 or line[0] != '|':
+                continue
+            line = line.split('|')[1]
+            gid = int(line[GPUpos:GPUpos + 3].strip())
+            pid = int(line[PIDpos:PIDpos + 7].strip())
+            # print(gid, pid, ps_lines[pid])
+            if pid in ps_lines \
+                and ps_lines[pid] not in [*self.ignoreuser, working_name]:
+                    # other accounts using this card, change mem to 0
+                    if 'verbose' in self.kwargs and self.kwargs['verbose']:
+                        print(f'PID {"%7d" % pid}, {ps_lines[pid]} is '
+                              f'using GPU {gid} on {self.ip}, skip this GPU.')
+                    for i in result:
+                        if int(i[0]) == gid:
+                            i[1] = 0
         return result
 
     def grep_check_usage(self, is_all_dead):
-        lines = subprocess.Popen(self.ssh_cmd('ps aux --cols 999 %s' % (
-                                     ' | grep ^' + self.username 
-                                         if len(self.username) else '',)),
+        lines = subprocess.Popen(self.ssh_cmd('ps aux --cols 999'),
                                  shell = True, 
                                  stdout = subprocess.PIPE,
                                  stderr = subprocess.DEVNULL,
@@ -162,7 +197,7 @@ class Worker(multiprocessing.Process):
             result['X'] = []
         for i in range(self.cpu):
             result['X'].append(self.get_flag(is_all_dead, 'X', i, useful))
-        for g, gmem in self.get_gpu_status():
+        for g, gmem in self.get_gpu_status(lines):
             result[g] = []
             for i in range(min(self.gpu, int(gmem / self.gpumem))):
                 result[g].append(self.get_flag(is_all_dead, g, i, useful))
