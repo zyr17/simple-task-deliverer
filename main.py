@@ -36,6 +36,8 @@ def main():
             status_list = get_status()
             if len(status_list) > 0:
                 IP_maxlen = max([len(x[0]) for x in status_list])
+            else:
+                time.sleep(configs['sleep_after_status'])
         prefix = gen_cmd_prefix(configs['command_prefix'], *status_list[0][1:])
         cmd, logf = taskgen.get_next_command(prefix, *status_list[0])
         logf = os.path.join(configs['log_folder'], logf)
@@ -66,7 +68,6 @@ def get_status():
                 if status == 'A':
                     res.append([ip, device, thread])
     print(f'available worker thread(s): {len(res)}')
-    time.sleep(configs['sleep_after_status'])
     return res
 
 def send_task(prefix, IP, device, thread_number, cmd, logfile):

@@ -111,6 +111,8 @@ class Worker(multiprocessing.Process):
             self.ip, 
             innercmd
         )
+        if 'verbose' in self.kwargs and self.kwargs['verbose']:
+            print('ssh_cmd', res)
         return res
 
     def get_gpu_status(self, ps_lines):
@@ -191,6 +193,7 @@ class Worker(multiprocessing.Process):
             lines = str(lines.read()).split('\n')
         except subprocess.TimeoutExpired:
             is_all_dead = True
+            lines = []
         useful = ''.join([x for x in lines if self.prefix in x])
         result = OrderedDict()
         if self.cpu > 0:
