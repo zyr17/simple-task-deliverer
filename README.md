@@ -38,11 +38,14 @@ Simple python script delivering tasks to many machines.
 
 # TODOs
 
-1. [ ] For every task, add prefix to identify it. 
-2. [ ] Support run several tasks on one machine.
-3. [ ] For GPU tasks, use `nvidia-smi` to check GPU status with current 
+1. [X] For every task, add prefix to identify it. 
+2. [X] Support run several tasks on one machine.
+3. [X] For GPU tasks, use `nvidia-smi` to check GPU status with current 
        running status to determine availability.
-4. [ ] Easy way to specify IPs of working machines.
+4. [X] Easy way to specify IPs of working machines.  
+       *improve it, set different work threads on different hardware.*
 5. [ ] A simple way to kill all/specified working tasks.
 6. [ ] Avoid override existing logs, show important informarion before 
        running.
+7. [ ] Pause running.
+8. [ ] Check failed tasks, skip exist tasks.
