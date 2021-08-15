@@ -98,8 +98,13 @@ class Worker(multiprocessing.Process):
             return 'D' # dead
         prefix = self.gen_cmd_prefix(device, number)
         if prefix + '=' in texts:
-            return 'B' # busy
-            # TODO get PID. now can't get PID by ps results.
+            lines = [x for x in texts.split('\n') if prefix + '=' in x]
+            for line in lines:
+                if not re.search(f'ssh [^=;]*{prefix}=', line):
+                    return 'B' # busy
+                    # TODO get PID. now can't get PID by ps results.
+            return 'A' # all match has ssh before, means it is a host task, 
+                       # not a worker task.
         else:
             return 'A' # available
 
@@ -166,6 +171,8 @@ class Worker(multiprocessing.Process):
         for line in lines[1:]:
             if len(line) == 0 or line[0] != '|':
                 continue
+            if 'No running process' in line:
+                continue
             line = line.split('|')[1]
             gid = int(line[GPUpos:GPUpos + 3].strip())
             pid = int(line[PIDpos:PIDpos + 7].strip())
@@ -188,13 +195,14 @@ class Worker(multiprocessing.Process):
                                  stderr = subprocess.DEVNULL,
                                  bufsize = -1)
         try:
-            lines.wait(timeout = 10)
-            lines = io.TextIOWrapper(lines.stdout)
-            lines = str(lines.read()).split('\n')
+            out, _ = lines.communicate(timeout = 10)
+            lines = out.decode('utf8').split('\n')
         except subprocess.TimeoutExpired:
+            print('timeout', self.ip)
+            print(io.TextIOWrapper(lines.stdout).read())
             is_all_dead = True
             lines = []
-        useful = ''.join([x for x in lines if self.prefix in x])
+        useful = '\n'.join([x for x in lines if self.prefix in x])
         result = OrderedDict()
         if self.cpu > 0:
             result['X'] = []
