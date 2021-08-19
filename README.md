@@ -4,21 +4,26 @@ Simple python script delivering tasks to many machines.
 
 # Preparation
 
-1．For the main machine, it can **login to all other working machines with**
+
+- For the main machine, it can **login to all other working machines with**
    **ssh key**.
-2. **The main machine has enough memory to handle many ssh connections.** i.e. 
+
+- **The main machine has enough memory to handle many ssh connections.** i.e. 
    the number of running tasks and number of threads to check working machine 
    availability.
-3. **The codes and datas are placed to all working machines, and the sent**
+
+- **The codes and datas are placed to all working machines, and the sent**
    **command can run properly on any working machine.** It is recommended to 
    use NAS to handle all codes and datas. Make some tests before sending real 
    tasks. 
-4. **When the task has many output, make sure it won't exceed the maximum** 
+
+- **When the task has many output, make sure it won't exceed the maximum** 
    **reading or writing speed of the hardware.** e.g., if your task writes logs
    10MB/s, when 20 tasks simultaneously writes to a same disk, all of them will
    spend many time waiting for write datas. This happens commonly when all
    tasks write datas to one NAS. 
-5. **When workers are new machines,** e.g. deploy many workers on cloud
+
+- **When workers are new machines,** e.g. deploy many workers on cloud
    services, `ssh` may show warning about unknown key fingerprints. In this
    situation, please change TODO to true in config to add
    `StrictHostKeyChecking=no` when using `ssh`. **When IPs may re-use,** `ssh`
