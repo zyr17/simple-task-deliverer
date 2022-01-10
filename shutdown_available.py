@@ -7,8 +7,8 @@ import time
 from get_worker_status import get_worker_status
 from utils import get_configs
 
-check_times = 1
-sleep_time = 1
+check_times = 5
+sleep_time = 20
 
 def get_available():
     res = []
@@ -23,7 +23,7 @@ def get_available():
     return res
 
 def send_shutdown(ip):
-    cmd = 'echo ssh %s "shutdown now"' % ip
+    cmd = 'ssh %s "shutdown now"' % ip
     os.system(cmd)
 
 def shutdown_available():

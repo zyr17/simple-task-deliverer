@@ -27,6 +27,8 @@ class MultiTSCTrain(TaskGeneratorBase):
     
     @staticmethod
     def update_existing_logs(log_folder):
+        if not os.path.exists(log_folder):
+            return set()
         files = os.listdir(log_folder)
         return set(['_'.join(x.split('_')[:-1]) 
                     for x in files if x[-4:] == '.log'])
@@ -56,9 +58,10 @@ class MultiTSCTrain(TaskGeneratorBase):
         return config + '_' + cfconfig + '_' + str(index)
 
     def make_command(self, config, cfconfig, tx):
-        return ('. ~/environment/cityflow/bin/activate; '
+        return (
+                # '. ~/environment/cityflow/bin/activate; '
                 'cd %s; '
-                'CUDA_LAUNCH_BLOCKING=1 '
+                # 'CUDA_LAUNCH_BLOCKING=1 '
                 'python -u main.py --config configs/main/%s.yml '
                                   '--cityflow-config configs/cityflow/%s.yml '
                                   '-tx %s '

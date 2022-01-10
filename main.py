@@ -67,6 +67,9 @@ def get_status():
             for thread, status in enumerate(R[ip][device]):
                 if status == 'A':
                     res.append([ip, device, thread])
+    if len(res) == 0 and configs['testmode']:
+        print('now in test mode, create not exist machines to send tasks')
+        res = [['0.0.0.0', 'X', 0]] * 1000
     print(f'available worker thread(s): {len(res)}')
     return res
 

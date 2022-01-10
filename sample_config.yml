@@ -2,21 +2,19 @@
 # but it is not recommended to use IP and hostname simultaneously, as one same 
 # worker may be treated as two different workers.
 ip_include:
-  - 10.176.[64-64].[26-27]
-  - node2[8-9]
+  - 192.168.30.[0-255]
 
 # excluded IPs. Only IPs shown in include and not shown in exclude will be
 # treated as a worker. 
 ip_exclude:
-  - 10.176.64.27
-  - node29
+  - 192.168.26.81
 
 # The number of tasks running on CPU. Now it doesn't support setting different
 # threads on different workers. 
-cpu_thread: 2
+cpu_thread: 1
 
 # The number of tasks running on GPU.
-gpu_thread: 1
+gpu_thread: 0
 
 # The prefix to be added when running the task. It's added before the real task
 # command like `TASKDELIVER0_1=; real_cmd`. The rule to add device and thread
@@ -31,7 +29,7 @@ ssh_strict_host_key_checking: false
 ssh_username: ''
 
 # the port for ssh. In normal situations, just remain it as 22.
-ssh_port: 30022
+ssh_port: 22
 
 # When tasks are using GPU, and running in a public machine, set an approximate
 # GPU memory usage to avoid MLE. You can also use it to avoid using GPUs which
@@ -49,13 +47,13 @@ gpu_check_ignore_users:
 # When checking status of workers, now many threads will work simultaneously. 
 # An approximate usage of memory per thread is 3MB in Ubuntu 20.04+Python3.7, 
 # set it with a smaller number when master has small memory. 
-parallel_num: 128
+parallel_num: 64
 
 # folder to save log files, which contains output of every task.
-log_folder: logs
+log_folder: Sept4-noOutroadPredict-phaseloss
 
 # The class name of the task generator to use.
-task_generator: SleepGenerator
+task_generator: MultiTSCTrain
 
 # when set true, output debugging messages.
 verbose: false
@@ -71,3 +69,11 @@ sleep_after_status: 3
 # corresponding arguments below. 
 sleep_time: 30s
 sleep_task_count: 15
+
+
+code_folder: /app/AAAI2022
+
+
+cityflow_config_list: /app/simple-task-deliverer/mtsc_cf_config_list.txt
+config_list: /app/simple-task-deliverer/Sept4_mtsc_config_list.txt
+train_number: 4

@@ -27,6 +27,7 @@
                'A' means available, 'D' means dead, 'B100' means busy, and
                task PID is 100. if only 'B', means task PID cannot be
                determined. 
+    TODO: some can ping but cannot ssh, may treat as available?
 """
 import os
 import getpass
