@@ -2,19 +2,22 @@
 # but it is not recommended to use IP and hostname simultaneously, as one same 
 # worker may be treated as two different workers.
 ip_include:
-  - 192.168.30.[0-255]
+  - 192.168.[0-1].[1-100]
+  - node2[0-9]
 
 # excluded IPs. Only IPs shown in include and not shown in exclude will be
 # treated as a worker. 
 ip_exclude:
-  - 192.168.26.81
+  - 192.168.0.1
+  - 192.168.1.[10-20]
+  - node29
 
 # The number of tasks running on CPU. Now it doesn't support setting different
 # threads on different workers. 
 cpu_thread: 1
 
 # The number of tasks running on GPU.
-gpu_thread: 0
+gpu_thread: 2
 
 # The prefix to be added when running the task. It's added before the real task
 # command like `TASKDELIVER0_1=; real_cmd`. The rule to add device and thread
@@ -42,7 +45,6 @@ expected_gpu_memory_usage: 0
 gpu_check_ignore_users:
   - root
   - gdm
-  - mdm
 
 # When checking status of workers, now many threads will work simultaneously. 
 # An approximate usage of memory per thread is 3MB in Ubuntu 20.04+Python3.7, 
