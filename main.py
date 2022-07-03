@@ -78,7 +78,7 @@ def send_task(prefix, IP, device, thread_number, cmd, logfile):
     port = configs['ssh_port']
     final_cmd = (f'ssh {username}{"@" if username else ""}{IP} -p {port} '
                  f'"{prefix}=; {cmd}" '
-                 f' > {logfile} 2>&1 &'
+                 f' > "{logfile}" 2>&1 &'
                 )
     if configs['verbose'] or configs['testmode']:
         print(final_cmd)
