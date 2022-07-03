@@ -82,9 +82,16 @@ class BlindLightTrain(TaskGeneratorBase):
                 f'--cityflow-config configs/cityflow/{cfconfig}.yml '
                 f'-tx \\"{tx}\\" '
                 '-g %s '
-                '--cityflow-config-modify SAVEREPLAY=False '
+                # '--cityflow-config-modify SAVEREPLAY=False '
+                '--cityflow-config-modify REPLAY_ONLY_KEEP_LAST=True '
+                '--cityflow-replay-only-evaluate '
                 f'--cityflow-config-modify \\"BLIND={blind}\\" '
                 f'--enable-wandb '
+                f'--note \\"{config}_{cfconfig}_{blind}\\" '
+                f'--note2 \\"{config}\\" '
+                f'--note3 \\"{cfconfig}\\" '
+                f'--note4 \\"{blind}\\" '
+                f'--note4 \\"{tx[-1]}\\" '  # run idx
                 # '--dqn-replay-size 80 '
                 # '-rmf '
         )
