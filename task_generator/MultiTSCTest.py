@@ -5,6 +5,7 @@ from .TaskGeneratorBase import TaskGeneratorBase
 class MultiTSCTest(TaskGeneratorBase):
     def __init__(self, test_log_folder, test_log_file_folder, code_folder, 
                  log_folder, **kwargs):
+        raise NotImplementedError("some path should relative to config file, not check compability!")
         self.codef = code_folder
         self.test_logs = self.update_test_logs(test_log_folder, 
                                                test_log_file_folder)
@@ -23,7 +24,7 @@ class MultiTSCTest(TaskGeneratorBase):
 
     @staticmethod
     def update_config_path(logfolder, command):
-        return command
+        # return command
         for num in range(len(command)):
             if command[num] == '--config':
                 command[num + 1] = command[num + 1].replace(

@@ -5,9 +5,12 @@
 """
 class TaskGeneratorBase:
     """customized configs in config.yml will passed by kwargs. Please keep 
-        `**kwargs` exist to collect unused arguments.
+        `**kwargs` exist to collect unused arguments. TODO: pydantic style.
+
+        special argument: config_folder, to tell where config is saved,
+        so can calculate relative path.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, config_folder, **kwargs):
         pass
 
     """after initialization, the class should be available to response the

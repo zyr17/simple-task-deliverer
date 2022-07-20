@@ -1,16 +1,19 @@
 import os
 
 from .TaskGeneratorBase import TaskGeneratorBase
+from utils import get_real_path
 
 class BlindLightTrain(TaskGeneratorBase):
     def __init__(self, cityflow_config_list, config_list, train_number, 
-                 code_folder, log_folder, **kwargs):
-        self.cc = self.read_config(cityflow_config_list)
-        self.c = self.read_config(config_list)
+                 code_folder, log_folder, config_folder, **kwargs):
+        self.config_folder = config_folder
+        self.cc = self.read_config(self.get_real_path(cityflow_config_list))
+        self.c = self.read_config(self.get_real_path(config_list))
         self.tn = train_number
-        self.codef = code_folder
-        self.existing_logs = self.update_existing_logs(log_folder)
-        print(self.existing_logs)
+        self.codef = self.get_real_path(code_folder)
+        self.existing_logs = self.update_existing_logs(
+            self.get_real_path(log_folder))
+        # print(self.existing_logs)
         self.check_exist()
         self.tasks = []
         self.now = 0
@@ -31,6 +34,9 @@ class BlindLightTrain(TaskGeneratorBase):
                     cmd = self.make_command(c1, c2, blind, tx)
                     logname = self.make_logname(tx)
                     self.tasks.append([cmd, logname])
+
+    def get_real_path(self, unk_path):
+        return get_real_path(unk_path, self.config_folder)
     
     @staticmethod
     def update_existing_logs(log_folder):
@@ -74,7 +80,7 @@ class BlindLightTrain(TaskGeneratorBase):
 
     def make_command(self, config, cfconfig, blind, tx):
         return (
-                '. ~/environment/cityflow/bin/activate; '
+                # '. ~/environment/cityflow/bin/activate; '
                 f'cd {self.codef}; '
                 # 'CUDA_LAUNCH_BLOCKING=1 '
                 f'python -u main.py '
@@ -91,7 +97,7 @@ class BlindLightTrain(TaskGeneratorBase):
                 f'--note2 \\"{config}\\" '
                 f'--note3 \\"{cfconfig}\\" '
                 f'--note4 \\"{blind}\\" '
-                f'--note4 \\"{tx[-1]}\\" '  # run idx
+                f'--note5 \\"{tx[-1]}\\" '  # run idx
                 # '--dqn-replay-size 80 '
                 # '-rmf '
         )

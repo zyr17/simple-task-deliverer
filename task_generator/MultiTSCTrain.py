@@ -5,6 +5,7 @@ from .TaskGeneratorBase import TaskGeneratorBase
 class MultiTSCTrain(TaskGeneratorBase):
     def __init__(self, cityflow_config_list, config_list, train_number, 
                  code_folder, log_folder, **kwargs):
+        raise NotImplementedError("some path should relative to config file, not check compability!")
         self.cc = self.read_config(cityflow_config_list)
         self.c = self.read_config(config_list)
         self.tn = train_number

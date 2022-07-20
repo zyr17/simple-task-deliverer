@@ -10,25 +10,45 @@ from get_worker_status import get_worker_status, output_status
 from task_generator import *
 from utils import get_configs, gen_cmd_prefix
 
-configs = 'config.yml'
+default_config = 'config.yml'
+if os.path.exists(default_config):
+    default_config = get_configs(default_config)
+else:
+    default_config = {}
+    raise ValueError('default config file config.yml not exist!')
+
+config_path = 'config.yml'
 if len(sys.argv) > 1:
-    configs = sys.argv[1]
-configs = get_configs(configs)
+    config_path = sys.argv[1]
+    if config_path[0] != '/':
+        config_path = './' + config_path  # not start with /, a relative path
+    if os.path.isdir(config_path):
+        # input folder, use config.yml in folder as config
+        config_path = f'{config_path}/config.yml'
+config_folder = os.path.abspath(os.path.dirname(config_path))
+configs = default_config.copy()
+configs.update(get_configs(config_path))
 
 def main():
-    taskgen = globals()[configs['task_generator']](**configs)
+    taskgen = globals()[configs['task_generator']](
+        config_folder = config_folder, **configs
+    )
     print('Task number:', len(taskgen))
     logf = configs['log_folder']
+    if logf[0] != '/':
+        # if not start with /, treat as relative folder to config path
+        logf = f'{config_folder}/{logf}'
+        configs['log_folder'] = logf
     if not os.path.exists(logf):
         print('log folder not exist, create it.')
         os.system(f'mkdir "{logf}" -p')
-    if len(os.listdir(logf)) > 0:
-        print('log folder not empty! press enter to continue '
-              'or ctrl-c to exit.')
-        try:
-            input()
-        except KeyboardInterrupt:
-            exit()
+    # if len(os.listdir(logf)) > 0:
+    #     print('log folder not empty! press enter to continue '
+    #           'or ctrl-c to exit.')
+    #     try:
+    #         input()
+    #     except KeyboardInterrupt:
+    #         exit()
     status_list = []
     total_number = len(taskgen)
     for i in range(total_number):

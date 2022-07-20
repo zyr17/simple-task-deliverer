@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# check all slave machine availability, and if they available for check_times,
+# shutdown them with ssh. it is recommended to work with remove_stopped.sh,
+# so after they stopped they will be automtically removed. 
+
 import os 
 import sys
 import time
