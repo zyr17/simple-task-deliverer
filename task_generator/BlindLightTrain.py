@@ -29,8 +29,9 @@ class BlindLightTrain(TaskGeneratorBase):
                 for i in range(train_number):
                     tx = self.make_tx(c1, c2, blind, i)
                     if tx in self.existing_logs:
-                        print(f'{tx} exist, skip!')
+                        # print(f'{tx} exist, skip!')
                         continue
+                    print(f'{tx} not found, pending.')
                     cmd = self.make_command(c1, c2, blind, tx)
                     logname = self.make_logname(tx)
                     self.tasks.append([cmd, logname])

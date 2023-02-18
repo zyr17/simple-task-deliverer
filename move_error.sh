@@ -24,7 +24,7 @@ for i in *log; do if [[ -n `tail -n 1 $i | grep -P "unsorted double linked list 
 # corresponsing log and wandb into errors folder.
 COUNTER=0
 for i in *log; do 
-    if [[ -n `cat "$i" | grep "fail too many times"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host"` ]]; then
+    if [[ -n `cat "$i" | grep "fail too many times"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host|Broken pipe"` ]]; then
         wandb=`cat $i | grep "wandb id:" | awk '{print $5}' | tr '\r' ' '`; 
         if [[ -z $wandb ]]; then 
             wandb=`tail -n 10 $i | grep "wandb sync" | awk '{print $4}' | sed 's/.*_[0-9]*-//'`; 
