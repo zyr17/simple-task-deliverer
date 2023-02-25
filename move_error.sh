@@ -24,18 +24,19 @@ for i in *log; do if [[ -n `tail -n 1 $i | grep -P "unsorted double linked list 
 # corresponsing log and wandb into errors folder.
 COUNTER=0
 for i in *log; do 
-    if [[ -n `cat "$i" | grep "fail too many times"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host|Broken pipe"` ]]; then
+    if [[ -n `cat "$i" | grep -P "fail too many times|Killed|Broken pipe|Connection refused"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host"` ]]; then
         wandb=`cat $i | grep "wandb id:" | awk '{print $5}' | tr '\r' ' '`; 
+        # echo $i $wandb
         if [[ -z $wandb ]]; then 
             wandb=`tail -n 10 $i | grep "wandb sync" | awk '{print $4}' | sed 's/.*_[0-9]*-//'`; 
         fi; 
         if [[ -n $wandb ]]; then 
             mv /app/AAAI2023/wandb/*${wandb} errors/wandb/; 
-            mv $i errors/; 
             COUNTER=`expr $COUNTER + 1`
         else 
             echo $i no wandb; 
         fi; 
+        mv $i errors/; 
     fi; 
 done
 echo moved $COUNTER wandb files

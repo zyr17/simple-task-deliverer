@@ -40,18 +40,21 @@ if __name__ == '__main__':
     failed = []
     for num, [log, logf, wandb] in enumerate(zip(logs, logsf, wandbf)):
         try:
+            prefix = 'echo ' if DEBUG else ''
             print(f'{num}/{len(logs)}\r', end = '')
             logroot = f'{cfolder}/{logf}'
-            logf = f'{logroot}/test_env'
-            for i in range(2):
-                # env may crash and have multiple env instance, get maximum id one
-                sub = max([int(x) for x in os.listdir(logf)])
-                logf = f'{logf}/{sub}'
-            replayf = [x for x in os.listdir(logf) if x[:10] == 'replay.txt']
-            replayf.sort()
-            replayf = f'{logf}/{replayf[-1]}'
-            prefix = 'echo ' if DEBUG else ''
-            os.system(f'{prefix} cp "{replayf}" "{replay_save_folder}/{log[:-4]}.txt"')
+            try:
+                logf = f'{logroot}/test_env'
+                for i in range(2):
+                    # env may crash and have multiple env instance, get maximum id one
+                    sub = max([int(x) for x in os.listdir(logf)])
+                    logf = f'{logf}/{sub}'
+                replayf = [x for x in os.listdir(logf) if x[:10] == 'replay.txt']
+                replayf.sort()
+                replayf = f'{logf}/{replayf[-1]}'
+                os.system(f'{prefix} mv "{replayf}" "{replay_save_folder}/{log[:-4]}.txt"')
+            except FileNotFoundError:
+                print(f'{log} have no replay file')
             os.system(f'{prefix} mv "{logroot}" "{log_save_folder}/"')
             os.system(f'{prefix} mv "{wandb_root}/{wandb}" "{wandb_save_folder}/"')
         except Exception as e:
