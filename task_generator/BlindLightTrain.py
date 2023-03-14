@@ -5,12 +5,14 @@ from utils import get_real_path
 
 class BlindLightTrain(TaskGeneratorBase):
     def __init__(self, cityflow_config_list, config_list, train_number, 
-                 code_folder, log_folder, config_folder, **kwargs):
+                 code_folder, log_folder, config_folder, pytorch_thread_num, 
+                 **kwargs):
         self.config_folder = config_folder
         self.cc = self.read_config(self.get_real_path(cityflow_config_list))
         self.c = self.read_config(self.get_real_path(config_list))
         self.tn = train_number
         self.codef = self.get_real_path(code_folder)
+        self.pytorch_thread_num = pytorch_thread_num
         self.existing_logs = self.update_existing_logs(
             self.get_real_path(log_folder))
         # print(self.existing_logs)
@@ -94,6 +96,7 @@ class BlindLightTrain(TaskGeneratorBase):
                 '--cityflow-replay-only-evaluate '
                 f'--cityflow-config-modify \\"BLIND={blind}\\" '
                 f'--enable-wandb '
+                f'--pytorch-threads {self.pytorch_thread_num} '
                 f'--note \\"{config}_{cfconfig}_{blind}\\" '
                 f'--note2 \\"{config}\\" '
                 f'--note3 \\"{cfconfig}\\" '
