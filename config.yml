@@ -2,31 +2,33 @@
 # create new, all newly defined configs will override default configs here.
 
 
-# worker IPs. Can use `[a-b]` to represent multiple IPs. Use hostname is OK, 
-# but it is not recommended to use IP and hostname simultaneously, as one same 
-# worker may be treated as two different workers.
+# The default number of tasks running on one worker with only CPU.
+cpu_thread: 0
+
+# The default number of tasks running on one GPU.
+gpu_thread: 8
+
+# worker IPs. Can use `[a-b]` to represent multiple IPs. e.g. 192.168.0.[1-10]
+# Use hostname is OK, but it is not recommended to use IP and hostname 
+# simultaneously, as one same worker may be treated as two different workers.
+# if want to specify cpu and gpu threads number, write as: 
+# IP: { cpu_thread: x, gpu_thread: y}. see examples below. 
 ip_include:
-  # - 192.168.[27-28].[0-255]
-  # - 192.168.0.[2-252]
-  # - 192.168.31.[0-255]
-  - 192.168.[19-20].[0-255]
+  - 192.168.[0-1].[1-4]  # include multiple IPs
+  - worker[15-19]        # include multiple hostnames
+  - 192.168.2.[2-5]:     # specify CPU only workers
+      cpu_thread: 4
+      gpu_thread: 0
+  - worker20:            # specify a GPU only worker
+      cpu_thread: 0
+      gpu_thread: 4
+
 
 # excluded IPs. Only IPs shown in include and not shown in exclude will be
 # treated as a worker. 
 ip_exclude:
   - 192.168.0.1
-  - 192.168.16.0
-  - 192.168.31.[253-255]
-  # - 192.168.26.81
-  - 192.168.0.213
-  # - 192.168.0.150
-
-# The number of tasks running on CPU. Now it doesn't support setting different
-# threads on different workers. 
-cpu_thread: 1
-
-# The number of tasks running on GPU.
-gpu_thread: 0
+  # - node27
 
 # The prefix to be added when running the task. It's added before the real task
 # command like `TASKDELIVER0_1=; real_cmd`. The rule to add device and thread

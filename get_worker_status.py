@@ -41,7 +41,7 @@ import re
 import yaml
 from utils import gen_cmd_prefix, get_configs
 
-def get_ip(ip):
+def get_ip(ip, cpu, gpu):
     res = []
     if '[' in ip and ']' in ip:
         r = re.match(r'(.*?)\[(\d+)-(\d+)\](.*)', ip)
@@ -52,22 +52,38 @@ def get_ip(ip):
         y = int(r.group(3))
         right = r.group(4)
         for i in range(x, y + 1):
-            res += get_ip(left + str(i) + right)
+            res += get_ip(left + str(i) + right, cpu, gpu)
     else:
         res = [ip]
-    return res
+    res_full = []
+    for i in res:
+        if isinstance(i, str):
+            res_full.append([i, cpu, gpu])
+        else:
+            res_full.append(i)
+    return res_full
 
-def gen_ip_lists(inc, exc):
+def gen_ip_lists(inc, exc, cpu, gpu):
     incIP = []
-    excIP = []
+    excIP = set()
     for i in inc:
-        incIP += get_ip(i)
+        if isinstance(i, str):
+            one_cpu = cpu
+            one_gpu = gpu
+        else:
+            ip_dict = i
+            i = list(ip_dict.keys())[0]
+            one_cpu = ip_dict[i]['cpu_thread']
+            one_gpu = ip_dict[i]['gpu_thread']
+        incIP += get_ip(i, one_cpu, one_gpu)
     if exc:
         for i in exc:
-            excIP += get_ip(i)
+            if not isinstance(i, str):
+                i = list(i.keys())[0]
+            excIP = excIP.union(set([x[0] for x in get_ip(i, 0, 0)]))
     IPs = []
     for i in incIP:
-        if i not in excIP:
+        if i[0] not in excIP:
             IPs.append(i)
     return IPs
 
@@ -122,6 +138,7 @@ class Worker(multiprocessing.Process):
         return res
 
     def get_gpu_status(self, ps_lines):
+        # TODO use query-gpu
         lines = subprocess.Popen(self.ssh_cmd('nvidia-smi'),
                                  shell = True, 
                                  stdout = subprocess.PIPE,
@@ -227,14 +244,15 @@ class Worker(multiprocessing.Process):
         self.pipe.send(self.ping_test_one_ip())
         self.pipe.close()
 
-def get_worker_status(ip_include, ip_exclude, parallel_num, **kwargs):
+def get_worker_status(ip_include, ip_exclude, parallel_num, cpu_thread, 
+                      gpu_thread, **kwargs):
     
-    IPs = gen_ip_lists(ip_include, ip_exclude)
+    IPs = gen_ip_lists(ip_include, ip_exclude, cpu_thread, gpu_thread)
 
     workers, send, recv = [], [], []
-    for ip in IPs:
+    for ip, cpu_thread, gpu_thread in IPs:
         s, r = multiprocessing.Pipe()
-        worker = Worker(ip, s, **kwargs)
+        worker = Worker(ip, s, cpu_thread, gpu_thread, **kwargs)
         send.append(s)
         recv.append(r)
         workers.append(worker)
