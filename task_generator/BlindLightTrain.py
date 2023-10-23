@@ -4,9 +4,9 @@ from .TaskGeneratorBase import TaskGeneratorBase
 from utils import get_real_path
 
 class BlindLightTrain(TaskGeneratorBase):
-    def __init__(self, cityflow_config_list, config_list, train_number, 
-                 code_folder, log_folder, config_folder, pytorch_thread_num, 
-                 **kwargs):
+    def __init__(self, cityflow_config_list, config_list, train_number,
+                 code_folder, log_folder, config_folder,
+                 pytorch_thread_num = 0, **kwargs):
         self.config_folder = config_folder
         self.cc = self.read_config(self.get_real_path(cityflow_config_list))
         self.c = self.read_config(self.get_real_path(config_list))
@@ -19,16 +19,16 @@ class BlindLightTrain(TaskGeneratorBase):
         self.check_exist()
         self.tasks = []
         self.now = 0
-        for c1 in self.c:
-            for c2 in self.cc:
-                blind = ''
-                if not isinstance(c1, str):
-                    blind = c1[1]
-                    c1 = c1[0]
-                if not isinstance(c2, str):
-                    blind = c2[1]
-                    c2 = c2[0]
-                for i in range(train_number):
+        for i in range(train_number):
+            for c1 in self.c:
+                for c2 in self.cc:
+                    blind = ''
+                    if not isinstance(c1, str):
+                        blind = c1[1]
+                        c1 = c1[0]
+                    if not isinstance(c2, str):
+                        blind = c2[1]
+                        c2 = c2[0]
                     tx = self.make_tx(c1, c2, blind, i)
                     if tx in self.existing_logs:
                         # print(f'{tx} exist, skip!')
@@ -40,17 +40,17 @@ class BlindLightTrain(TaskGeneratorBase):
 
     def get_real_path(self, unk_path):
         return get_real_path(unk_path, self.config_folder)
-    
+
     @staticmethod
     def update_existing_logs(log_folder):
         if not os.path.exists(log_folder):
             return set()
         files = os.listdir(log_folder)
-        return set(['_'.join(x.split('_')[:-1]) 
+        return set(['_'.join(x.split('_')[:-1])
                     for x in files if x[-4:] == '.log'])
 
     def read_config(self, fname):
-        res = [x.replace('.yml', '') 
+        res = [x.replace('.yml', '')
                for x in open(fname).read().strip().split('\n')]
         for i in res:
             assert (' ' in res[0]) == (' ' in i)
@@ -58,7 +58,7 @@ class BlindLightTrain(TaskGeneratorBase):
             res = [x.split(' ') for x in res]
             assert set(map(len, res)) == set([2])
         return res
-    
+
     def check_exist(self):
         cf = os.listdir(os.path.join(self.codef, 'configs/main'))
         ccf = os.listdir(os.path.join(self.codef, 'configs/cityflow'))
@@ -79,32 +79,38 @@ class BlindLightTrain(TaskGeneratorBase):
             raise ValueError
 
     def make_tx(self, config, cfconfig, blind, index):
-        return f'{config}_{cfconfig}_{blind}_{index}'
+        if blind != '':
+            return f'{config}_{cfconfig}_{blind}_{index}'
+        return f'{config}_{cfconfig}_{index}'
 
     def make_command(self, config, cfconfig, blind, tx):
-        return (
-                # '. ~/environment/cityflow/bin/activate; '
-                f'cd {self.codef}; '
-                # 'CUDA_LAUNCH_BLOCKING=1 '
-                f'python -u main.py '
-                f'--config configs/main/{config}.yml '
-                f'--cityflow-config configs/cityflow/{cfconfig}.yml '
-                f'-tx \\"{tx}\\" '
-                '-g %s '
-                # '--cityflow-config-modify SAVEREPLAY=False '
-                '--cityflow-config-modify REPLAY_ONLY_KEEP_LAST=True '
-                '--cityflow-replay-only-evaluate '
-                f'--cityflow-config-modify \\"BLIND={blind}\\" '
-                f'--enable-wandb '
-                f'--pytorch-threads {self.pytorch_thread_num} '
-                f'--note \\"{config}_{cfconfig}_{blind}\\" '
-                f'--note2 \\"{config}\\" '
-                f'--note3 \\"{cfconfig}\\" '
-                f'--note4 \\"{blind}\\" '
-                f'--note5 \\"{tx[-1]}\\" '  # run idx
-                # '--dqn-replay-size 80 '
-                # '-rmf '
+        cmd = (
+            '. ~/environment/cityflow/bin/activate; '
+            f'cd {self.codef}; '
+            # 'CUDA_LAUNCH_BLOCKING=1 '
+            'SUMO_HOME=/usr/share/sumo '
+            f'python -u main.py '
+            f'--config configs/main/{config}.yml '
+            f'--cityflow-config configs/cityflow/{cfconfig}.yml '
+            f'-tx \\"{tx}\\" '
+            '-g %s '
+            # '--cityflow-config-modify SAVEREPLAY=False '
+            '--cityflow-config-modify REPLAY_ONLY_KEEP_LAST=True '
+            # '--cityflow-replay-only-evaluate '
+            f'--enable-wandb '
+            f'--note \\"{config}_{cfconfig}_{blind}\\" '
+            f'--note2 \\"{config}\\" '
+            f'--note3 \\"{cfconfig}\\" '
+            f'--note4 \\"{blind}\\" '
+            f'--note5 \\"{tx[-1]}\\" '  # run idx
+            # '--dqn-replay-size 80 '
+            # '-rmf '
         )
+        if self.pytorch_thread_num > 0:
+            cmd += f'--pytorch-threads {self.pytorch_thread_num} '
+        if blind != '':
+            cmd += f'--cityflow-config-modify \\"BLIND={blind}\\" '
+        return cmd
 
     def make_logname(self, tx):
         return tx + '_%s.log'
@@ -123,3 +129,4 @@ class BlindLightTrain(TaskGeneratorBase):
             self.now += 1
             return res
         raise StopIteration
+

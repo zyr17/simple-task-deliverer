@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os 
+import os
 import sys
 import time
 import re
@@ -53,6 +53,8 @@ def main():
     total_number = len(taskgen)
     for i in range(total_number):
         while len(status_list) == 0:
+            print('available worker not found, will get status in 15s')
+            time.sleep(15)  # sleep 15s to wait command sent successfuly
             status_list = get_status()
             if len(status_list) > 0:
                 IP_maxlen = max([len(x[0]) for x in status_list])
@@ -97,7 +99,8 @@ def send_task(prefix, IP, device, thread_number, cmd, logfile):
     username = configs['ssh_username']
     port = configs['ssh_port']
     final_cmd = (f'ssh {username}{"@" if username else ""}{IP} -p {port} '
-                 f'"{prefix}=; {cmd}" '
+                 # add colon to avoid cmd disappear before cmd done running
+                 f'"{prefix}=; {cmd}; :;" '
                  f' > "{logfile}" 2>&1 &'
                 )
     if configs['verbose'] or configs['testmode']:
@@ -188,7 +191,7 @@ def check_exist(configs, cityflow_configs):
         raise ValueError
 
 def read_config(cfile, ccfile):
-    return [open(cfile).read().strip().split('\n'), 
+    return [open(cfile).read().strip().split('\n'),
             open(ccfile).read().strip().split('\n')]
 
 def train_main(argv):
@@ -235,10 +238,10 @@ def test_main(argv):
         if is_move:
             logfile = '%s/%s_test%s.log' % (log_folder, log, IP.split('.')[-1])
             send_task(IP, cmd, logfile)
-            os.system('mv %s/%s %s' % (log_folder, ori_log, 
+            os.system('mv %s/%s %s' % (log_folder, ori_log,
                                        test_target_folder))
         else:
-            logfile = '%s/%s_test%s.log' % (test_target_folder, 
+            logfile = '%s/%s_test%s.log' % (test_target_folder,
                                             log, IP.split('.')[-1])
             send_task(IP, cmd, logfile)
         now_number += 1
@@ -248,3 +251,4 @@ if __name__ == '__main__':
     #print(get_status())
     #send_task('192.168.1.251', 'cd ' + code_folder + '; ls', 'running_log/1.log')
     main()
+

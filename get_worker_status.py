@@ -220,6 +220,8 @@ class Worker(multiprocessing.Process):
             print(io.TextIOWrapper(lines.stdout).read())
             is_all_dead = True
             lines = []
+        if len(lines) < 10:  # ps failed
+            is_all_dead = True
         useful = '\n'.join([x for x in lines if self.prefix in x])
         result = OrderedDict()
         if self.cpu > 0:

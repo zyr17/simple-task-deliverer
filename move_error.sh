@@ -24,14 +24,18 @@ for i in *log; do if [[ -n `tail -n 1 $i | grep -P "unsorted double linked list 
 # corresponsing log and wandb into errors folder.
 COUNTER=0
 for i in *log; do 
-    if [[ -n `cat "$i" | grep -P "fail too many times|Killed|Broken pipe|Connection refused"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host"` ]]; then
+    if [[ -n `cat "$i" | grep -P "fail too many times|Killed|Broken pipe|Connection refused|Segmentation fault|TypeError|FileNotFoundError|oo many env| CUDA error|NotImplementedError"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host|Illegal instruction|Terminated|ConnectionResetError|core dumped"` ]]; then
         wandb=`cat $i | grep "wandb id:" | awk '{print $5}' | tr '\r' ' '`; 
         # echo $i $wandb
         if [[ -z $wandb ]]; then 
             wandb=`tail -n 10 $i | grep "wandb sync" | awk '{print $4}' | sed 's/.*_[0-9]*-//'`; 
         fi; 
         if [[ -n $wandb ]]; then 
-            mv /app/AAAI2023/wandb/*${wandb} errors/wandb/; 
+            WANDB_FOLDER=/app/AAAI2023/wandb
+            if [[ ! -e $WANDB_FOLDER ]]; then
+                WANDB_FOLDER=/home/jqz/nas/codes/MultiDCTSC/wandb
+            fi
+            mv $WANDB_FOLDER/*${wandb} errors/wandb/; 
             COUNTER=`expr $COUNTER + 1`
         else 
             echo $i no wandb; 

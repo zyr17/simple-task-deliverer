@@ -15,7 +15,10 @@ if __name__ == '__main__':
     wandb_save_folder = f'{target}/wandb'
     for i in [log_save_folder, replay_save_folder, wandb_save_folder]:
         if not os.path.exists(i):
-            os.mkdir(i)
+            try:  # when run on multiple servers, may raise exception
+                os.mkdir(i)
+            except:
+                pass
     logs = os.listdir(target)
     configs = [x for x in logs if '.yml' == x[-4:]]
     assert len(configs) == 1
@@ -36,7 +39,7 @@ if __name__ == '__main__':
     cfolder = yaml.load(open(f'{target}/{configs}'), Loader = yaml.SafeLoader)['code_folder']
     wandb_root = f'{cfolder}/wandb'
     all_wandb = [x for x in os.listdir(wandb_root) if 'offline-' in x]
-    wandbf = [[y for y in all_wandb if x in y][0] for x in wandbf]
+    wandbf = [[y for y in all_wandb if x in y] for x in wandbf]
     failed = []
     for num, [log, logf, wandb] in enumerate(zip(logs, logsf, wandbf)):
         try:
@@ -53,12 +56,18 @@ if __name__ == '__main__':
                 replayf.sort()
                 replayf = f'{logf}/{replayf[-1]}'
                 os.system(f'{prefix} mv "{replayf}" "{replay_save_folder}/{log[:-4]}.txt"')
-            except FileNotFoundError:
+            except FileNotFoundError as e:
                 print(f'{log} have no replay file')
-            os.system(f'{prefix} mv "{logroot}" "{log_save_folder}/"')
-            os.system(f'{prefix} mv "{wandb_root}/{wandb}" "{wandb_save_folder}/"')
+                print(e)
+            while logroot[-1] == '/':
+                logroot = logroot[:-1]
+            # os.system(f'{prefix} rm -r "{log_save_folder}/{logroot.split("/")[-1]}"')
+            os.system(f'{prefix} mv -f "{logroot}" "{log_save_folder}/"')
+            # os.system(f'{prefix} rm -r "{wandb_save_folder}/{wandb[0]}"')
+            os.system(f'{prefix} mv -f "{wandb_root}/{wandb[0]}" "{wandb_save_folder}/"')
         except Exception as e:
             if DEBUG:
                 raise e
+            print('error:', e)
             failed.append(log)
     print(f'{len(failed)} failed. {" ".join(failed)}')
