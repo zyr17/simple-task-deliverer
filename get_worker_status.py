@@ -73,8 +73,13 @@ def gen_ip_lists(inc, exc, cpu, gpu):
         else:
             ip_dict = i
             i = list(ip_dict.keys())[0]
-            one_cpu = ip_dict[i]['cpu_thread']
-            one_gpu = ip_dict[i]['gpu_thread']
+            if ip_dict[i] is None:
+                # no desc, use default
+                one_cpu = cpu
+                one_gpu = gpu
+            else:
+                one_cpu = ip_dict[i]['cpu_thread']
+                one_gpu = ip_dict[i]['gpu_thread']
         incIP += get_ip(i, one_cpu, one_gpu)
     if exc:
         for i in exc:
