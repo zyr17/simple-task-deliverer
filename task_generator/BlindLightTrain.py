@@ -111,7 +111,7 @@ class BlindLightTrain(TaskGeneratorBase):
             f'--note4 \\"{blind}\\" '
             f'--note5 \\"{tx[-1]}\\" '  # run idx
             # test configs
-            '--dqn-replay-size 80 --n-frames 360 --evaluate-round 1 '
+            # '--dqn-replay-size 80 --n-frames 360 --evaluate-round 1 '
             # '-rmf '
             '; '
             # after run, zip results
