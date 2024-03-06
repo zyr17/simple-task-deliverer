@@ -8,7 +8,7 @@ import yaml
 DEBUG = False
 COMMAND_MV = 'mv -f'
 COMMAND_LN = 'ln -s'
-COMMAND = COMMAND_MV
+COMMAND = COMMAND_LN
 
 def blindlight(target):
     # used for MultiTSC/BlindLight to get wandb, replay and logs of one exp folder
@@ -179,10 +179,19 @@ def KDD24_sweep(target):
 
 
 if __name__ == '__main__':
-    func = sys.argv[1]
+    method = sys.argv[1]
+    if method == 'ln':
+        COMMAND = COMMAND_LN
+    elif method == 'mv':
+        COMMAND = COMMAND_MV
+    else:
+        raise NotImplementedError(method)
+    func = sys.argv[2]
     if func == 'bl':
-        blindlight(sys.argv[2])
+        blindlight(sys.argv[3])
     elif func == 'kdd':
-        KDD24(sys.argv[2])
+        KDD24(sys.argv[3])
     elif func == 'sweep':
-        KDD24_sweep(sys.argv[2])
+        KDD24_sweep(sys.argv[3])
+    else:
+        raise NotImplementedError(func)
