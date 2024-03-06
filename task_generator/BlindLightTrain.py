@@ -85,7 +85,14 @@ class BlindLightTrain(TaskGeneratorBase):
 
     def make_command(self, config, cfconfig, blind, tx):
         cmd = (
-            '. ~/environment/cityflow/bin/activate; '
+            # download code from cos
+            'coscli cp cos://tits/BL.7z /BL.7z; '
+            # extract and copy to codef
+            'cd /; '
+            '7z x BL.7z; '
+            f'rm -r {self.codef}; '
+            f'mv BlindLight {self.codef}; '
+            # go to codef
             f'cd {self.codef}; '
             # 'CUDA_LAUNCH_BLOCKING=1 '
             'SUMO_HOME=/usr/share/sumo '
@@ -103,8 +110,13 @@ class BlindLightTrain(TaskGeneratorBase):
             f'--note3 \\"{cfconfig}\\" '
             f'--note4 \\"{blind}\\" '
             f'--note5 \\"{tx[-1]}\\" '  # run idx
-            # '--dqn-replay-size 80 '
+            # test configs
+            '--dqn-replay-size 80 --n-frames 360 --evaluate-round 1 '
             # '-rmf '
+            '; '
+            # after run, zip results
+            f'7z a -m0=lzma2 "{config}_{cfconfig}_{blind}_{tx[-1]}.7z" logs results wandb; '
+            f'coscli cp "{config}_{cfconfig}_{blind}_{tx[-1]}.7z" cos://tits/results/ '
         )
         if self.pytorch_thread_num > 0:
             cmd += f'--pytorch-threads {self.pytorch_thread_num} '
