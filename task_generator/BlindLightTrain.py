@@ -85,6 +85,11 @@ class BlindLightTrain(TaskGeneratorBase):
 
     def make_command(self, config, cfconfig, blind, tx):
         cmd = (
+            # enable swap
+            'fallocate -l 4G /swap; '
+            'chmod 600 /swap; '
+            'mkswap /swap; '
+            'swapon /swap; '
             # download code from cos
             'coscli cp cos://tits/BL.7z /BL.7z; '
             # extract and copy to codef
@@ -111,7 +116,7 @@ class BlindLightTrain(TaskGeneratorBase):
             f'--note4 \\"{blind}\\" '
             f'--note5 \\"{tx[-1]}\\" '  # run idx
             # test configs
-            '--dqn-replay-size 80 --n-frames 360 --evaluate-round 1 '
+            # '--dqn-replay-size 80 --n-frames 360 --evaluate-round 1 '
             # '-rmf '
             '; '
             # after run, zip results
