@@ -1,3 +1,4 @@
 __pycache__
 *.swp
 oss-region-cn-huhehaote-internal
+.env
