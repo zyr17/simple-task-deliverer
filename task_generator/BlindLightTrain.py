@@ -86,7 +86,7 @@ class BlindLightTrain(TaskGeneratorBase):
     def make_command(self, config, cfconfig, blind, tx):
         cmd = (
             # enable swap
-            'fallocate -l 4G /swap; '
+            'fallocate -l 2G /swap; '
             'chmod 600 /swap; '
             'mkswap /swap; '
             'swapon /swap; '
