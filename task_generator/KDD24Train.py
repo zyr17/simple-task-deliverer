@@ -88,6 +88,7 @@ class KDD24Train(TaskGeneratorBase):
         number in get_next_command. (if CPU-only, it will be ',')
         """
         cmd = (
+            '. ~/.bash_profile; '
             '. ~/environment/KDD24/bin/activate; '
             f'cd {self.codef}; '
             # 'CUDA_LAUNCH_BLOCKING=1 '
