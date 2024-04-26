@@ -99,8 +99,9 @@ def send_task(prefix, IP, device, thread_number, cmd, logfile):
     username = configs['ssh_username']
     port = configs['ssh_port']
     final_cmd = (f'ssh {username}{"@" if username else ""}{IP} -p {port} '
-                 # add colon to avoid cmd disappear before cmd done running
-                 f'"{prefix}=; {cmd}; :;" '
+                 # add sleep and colon to avoid cmd disappear before cmd done running,
+                 # and make sure last data has written to the log file.
+                 f'"{prefix}=; {cmd}; sleep 10s; :;" '
                  f' > "{logfile}" 2>&1 &'
                 )
     if configs['verbose'] or configs['testmode']:
