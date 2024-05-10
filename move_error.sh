@@ -3,6 +3,9 @@
 # check one exp folder, filter error logs and move them into error folder;
 # then select error wandb file to avoid uploading crashed logs.
 
+MV='mv'
+# MV='echo mv'
+
 if [[ -z $1 ]]; then
     echo one argument means operation folder
     exit 1
@@ -38,12 +41,12 @@ for i in *log; do
             if [[ ! -e $WANDB_FOLDER ]]; then
                 WANDB_FOLDER=/home/jqz/nas/codes/MultiDCTSC/wandb
             fi
-            mv $WANDB_FOLDER/*${wandb} errors/wandb/; 
+            $MV $WANDB_FOLDER/*${wandb} errors/wandb/; 
             COUNTER=`expr $COUNTER + 1`
         else 
             echo $i no wandb; 
         fi; 
-        mv $i errors/; 
+        $MV $i errors/; 
     fi; 
 done
 echo moved $COUNTER wandb files
