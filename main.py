@@ -66,6 +66,8 @@ def main():
         send_task(prefix, *status_list[0], cmd, logf)
         print(task_send_notify(i, total_number, *status_list[0], IP_maxlen))
         status_list = status_list[1:]
+        # sleep after send one task to avoid reach rate limit
+        time.sleep(configs['sleep_after_task'])
 
 def task_send_notify(now, total_number, IP, device, thread, IP_maxlen = 0):
     res = (f'Task {"%3d" % now}/{total_number} sent to '

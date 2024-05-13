@@ -82,6 +82,10 @@ testmode: false
 # into one worker thread, it is recommended to set a positive interger. 
 sleep_after_status: 3
 
+# sleep seconds after sending a task. If network have rate limit, it is recommended to
+# set a positive float number to avoid be banned from NATs and firewalls.
+sleep_after_task: 0.5
+
 # arguments used in SleepGenerator. When using other task generator, add
 # corresponding arguments below, or write new config and add them.
 sleep_time: 30s
