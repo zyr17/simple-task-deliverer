@@ -37,4 +37,7 @@ if __name__ == '__main__':
     assert len(sys.argv) > 1
     for filename in sys.argv[1:]:
         print(f'processing file {filename}')
-        kill_one(filename)
+        try:
+            kill_one(filename)
+        except IndexError:
+            print("get pid FAILED!")
