@@ -15,7 +15,7 @@ cd $1
 
 mkdir -p errors/wandb
 
-for i in *log; do if [[ -n `tail -n 1 $i | grep -P "unsorted double linked list corrupted|invalid pointer"` ]]; then IP=`echo $i | sed 's/.*\(192\.168\.[0-9]\+\.[0-9]\+\).*/\1/'`; echo $IP; tail -n 1 $i; ssh $IP shutdown now; fi; done
+# for i in *log; do if [[ -n `tail -n 1 $i | grep -P "unsorted double linked list corrupted|invalid pointer"` ]]; then IP=`echo $i | sed 's/.*\(192\.168\.[0-9]\+\.[0-9]\+\).*/\1/'`; echo $IP; tail -n 1 $i; ssh $IP shutdown now; fi; done
 
 # ssh to shutdown all running slaves, as they are stuck. if not want to stop
 # running slaves, comment this.
@@ -27,7 +27,7 @@ for i in *log; do if [[ -n `tail -n 1 $i | grep -P "unsorted double linked list 
 # corresponsing log and wandb into errors folder.
 COUNTER=0
 for i in *log; do 
-    if [[ -n `cat "$i" | grep -P "fail too many times|Killed|Broken pipe|Connection refused|Segmentation fault|TypeError|FileNotFoundError|oo many env| CUDA error|NotImplementedError|ModuleNotFoundError|TypeError: Batch|torch.cuda.OutOfMemoryError"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host|Illegal instruction|Terminated|ConnectionResetError|core dumped"` ]]; then
+    if [[ -n `cat "$i" | grep -P "fail too many times|Killed|Broken pipe|Connection refused|Segmentation fault|TypeError|FileNotFoundError|oo many env| CUDA error|NotImplementedError|ModuleNotFoundError|TypeError: Batch|torch.cuda.OutOfMemoryError|FileExistsError"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host|Illegal instruction|Terminated|ConnectionResetError|core dumped|OSError"` ]]; then
         wandb=`cat $i | grep "wandb id:" | awk '{print $5}' | tr '\r' ' '`; 
         # echo $i $wandb
         if [[ -z $wandb ]]; then 

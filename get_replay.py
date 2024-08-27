@@ -95,11 +95,14 @@ def KDD24(target):
          for y in open(f'{target}/{x}').readlines() 
          if 'log folder:' in y][0]
         for x in logs]
-    wandbf = [
-        [y.strip().split(' ')[-1]
-         for y in open(f'{target}/{x}').readlines() 
-         if 'wandb run:' in y][0]
-        for x in logs]
+    try:
+        wandbf = [
+            [y.strip().split(' ')[-1]
+             for y in open(f'{target}/{x}').readlines() 
+             if 'wandb run:' in y][0]
+            for x in logs]
+    except:
+        wandbf = ['UNEXIST_WANDB' for x in logs]
     # print('\n'.join(logs))
     # print(configs)
     cfolder = yaml.load(open(f'{target}/{configs}'), Loader = yaml.SafeLoader)['code_folder']
@@ -117,7 +120,10 @@ def KDD24(target):
             # os.system(f'{prefix} rm -r "{log_save_folder}/{logroot.split("/")[-1]}"')
             os.system(f'{prefix} {COMMAND} "{logroot}" "{log_save_folder}/"')
             # os.system(f'{prefix} rm -r "{wandb_save_folder}/{wandb[0]}"')
-            os.system(f'{prefix} {COMMAND} "{wandb_root}/{wandb[0]}" "{wandb_save_folder}/"')
+            if len(wandb):
+                os.system(f'{prefix} {COMMAND} "{wandb_root}/{wandb[0]}" "{wandb_save_folder}/"')
+            else:
+                print(f'wandb of `{logf}` not found')
         except Exception as e:
             if DEBUG:
                 raise e
