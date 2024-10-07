@@ -62,6 +62,7 @@ class KDD24Train(TaskGeneratorBase):
         # filename should not be same
         res_filename = set(map(lambda x: x.split('/')[-1], res))
         assert len(res_filename) == len(res), 'some files have same name!'
+        # res = [x for x in res if 'ppr200' not in x]  # filter ppr200 for now
         return res
 
     def check_exist(self):

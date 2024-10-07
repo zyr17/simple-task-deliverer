@@ -184,6 +184,47 @@ def KDD24_sweep(target):
     print(f'{len(failed)} failed. {" ".join(failed)}')
 
 
+def KDD24_eval_all(target):
+    # used for KDD24 to get wandb and logs of one exp folder
+    log_save_folder = f'{target}/logs'
+    wandb_save_folder = f'{target}/wandb'
+    for i in [log_save_folder, wandb_save_folder]:
+        if not os.path.exists(i):
+            try:  # when run on multiple servers, may raise exception
+                os.mkdir(i)
+            except:
+                pass
+    logs = os.listdir(target)
+    configs = [x for x in logs if '.yml' == x[-4:]]
+    assert len(configs) == 1
+    configs = configs[0]
+    logs = [x for x in logs if x[-4:] == '.log']
+    logsf = [
+        [y.strip().split(' ')[-1] 
+         for y in open(f'{target}/{x}').readlines() 
+         if 'log folder:' in y][0]
+        for x in logs]
+    # print('\n'.join(logs))
+    # print(configs)
+    cfolder = yaml.load(open(f'{target}/{configs}'), Loader = yaml.SafeLoader)['code_folder']
+    failed = []
+    for num, [log, logf] in enumerate(zip(logs, logsf)):
+        try:
+            prefix = 'echo ' if DEBUG else ''
+            print(f'{num}/{len(logs)}\r', end = '')
+            logroot = f'{cfolder}/{logf}'
+            while logroot[-1] == '/':
+                logroot = logroot[:-1]
+            # os.system(f'{prefix} rm -r "{log_save_folder}/{logroot.split("/")[-1]}"')
+            os.system(f'{prefix} {COMMAND} "{logroot}" "{log_save_folder}/"')
+            # os.system(f'{prefix} rm -r "{wandb_save_folder}/{wandb[0]}"')
+        except Exception as e:
+            if DEBUG:
+                raise e
+            print('error:', e)
+            failed.append(log)
+    print(f'{len(failed)} failed. {" ".join(failed)}')
+
 if __name__ == '__main__':
     method = sys.argv[1]
     if method == 'ln':
@@ -199,5 +240,7 @@ if __name__ == '__main__':
         KDD24(sys.argv[3])
     elif func == 'sweep':
         KDD24_sweep(sys.argv[3])
+    elif func == 'kdd_eval_all':
+        KDD24_eval_all(sys.argv[3])
     else:
         raise NotImplementedError(func)
