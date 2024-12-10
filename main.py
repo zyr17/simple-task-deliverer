@@ -51,10 +51,12 @@ def main():
     #         exit()
     status_list = []
     total_number = len(taskgen)
+    time_wait = 1
     for i in range(total_number):
         while len(status_list) == 0:
-            print('available worker not found, will get status in 15s')
-            time.sleep(15)  # sleep 15s to wait command sent successfuly
+            print(f'available worker not found, will get status in {time_wait}s')
+            time.sleep(time_wait)  # sleep 15s to wait command sent successfuly
+            time_wait = 15
             status_list = get_status()
             if len(status_list) > 0:
                 IP_maxlen = max([len(x[0]) for x in status_list])

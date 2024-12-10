@@ -56,6 +56,7 @@ class MultiTSCTrain(TaskGeneratorBase):
             raise ValueError
 
     def make_tx(self, config, cfconfig, index):
+        config = config.split('/')[-1]
         return config + '_' + cfconfig + '_' + str(index)
 
     def make_command(self, config, cfconfig, tx):

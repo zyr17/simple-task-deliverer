@@ -66,7 +66,7 @@ class BlindLightTrain(TaskGeneratorBase):
         for c in self.c:
             if not isinstance(c, str):
                 c = c[0]  # has blind param, get config name
-            if c + '.yml' not in cf:
+            if not os.path.exists(self.codef + '/configs/main/' + c + '.yml'):
                 print('config %s not exist' % c)
                 flag = True
         for c in self.cc:
@@ -79,6 +79,7 @@ class BlindLightTrain(TaskGeneratorBase):
             raise ValueError
 
     def make_tx(self, config, cfconfig, blind, index):
+        config = config.split('/')[-1]
         if blind != '':
             return f'{config}_{cfconfig}_{blind}_{index}'
         return f'{config}_{cfconfig}_{index}'
