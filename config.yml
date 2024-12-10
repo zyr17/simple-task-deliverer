@@ -67,7 +67,7 @@ parallel_num: 64
 # is relative to config file path, if use ./, will save logs in the same
 # folder of config. it is recommended to create folder and put config in that
 # folder, then configs and logs will all in the folder. 
-log_folder: ./
+log_folder: ./test
 
 # The class name of the task generator to use.
 task_generator: SleepGenerator
@@ -77,6 +77,10 @@ verbose: false
 
 # when set true, only show ssh commands, and not really sending them.
 testmode: false
+
+# when true, logs are saved by remote worker. recommended when using nas, so no need
+# to keep multiple ssh links from master.
+remote_save_log: false
 
 # sleep seconds after getting worker status. to avoid mistakenly send two tasks
 # into one worker thread, it is recommended to set a positive interger. 
