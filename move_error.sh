@@ -27,7 +27,7 @@ mkdir -p errors/wandb
 # corresponsing log and wandb into errors folder.
 COUNTER=0
 for i in *log; do 
-    if [[ -e `cat "$i" | grep -P "run over successfully."` ]]; then
+    if [[ -n `cat "$i" | grep -P "run over successfully."` ]]; then
         continue
     fi
     if [[ -n `cat "$i" | grep -P "fail too many times|Killed|Broken pipe|Connection refused|Segmentation fault|TypeError|FileNotFoundError|oo many env| CUDA error|NotImplementedError|ModuleNotFoundError|TypeError: Batch|torch.cuda.OutOfMemoryError|FileExistsError|ValueError|UnpicklingError"` || -n `tail -n 1 "$i" | grep -P "unsorted double linked list corrupted|invalid pointer|closed by remote host|Illegal instruction|Terminated|ConnectionResetError|core dumped|OSError|KeyboardInterrupt"` ]]; then

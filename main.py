@@ -111,7 +111,8 @@ def send_task(prefix, IP, device, thread_number, cmd, logfile):
     if configs['remote_save_log']:
         final_cmd = (
             f'ssh {username}{"@" if username else ""}{IP} -p {port} '
-            f''' " nohup bash -c ' {prefix}=; {cmd} ' > '{logfile}' 2>&1 < /dev/null & "'''
+            f''' " nohup bash -c ' {prefix}=; {cmd}; sleep 10s; :; ' '''
+            f''' > '{logfile}' 2>&1 < /dev/null; " & '''
         )
     if configs['verbose'] or configs['testmode']:
         print(final_cmd)
